@@ -1,5 +1,7 @@
 package org.sauliketola.helsinkicitybikes.reader;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,9 +15,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sauli on 29.5.2016.
- */
 public class CityBikeStationsReader {
 
     public List<BikeStation> readBikeStations() throws IOException {
@@ -29,6 +28,8 @@ public class CityBikeStationsReader {
         while((line = reader.readLine()) != null) {
             result.append(line);
         }
+
+        Log.i("Stations", "Station data: " + result.toString());
 
         List<BikeStation> stations = new ArrayList<>();
 

@@ -45,7 +45,7 @@ public class BikeStationsListViewAdapter extends ArrayAdapter<BikeStation> {
         return rowView;
     }
 
-    public void setLocation(Location mLocation){
+    public void updateDistances(Location mLocation){
         this.mLocation = mLocation;
 
         // update distances

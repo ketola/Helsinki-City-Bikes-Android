@@ -1,10 +1,8 @@
 package org.sauliketola.helsinkicitybikes;
 
-import android.app.ListActivity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -14,9 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -30,13 +26,21 @@ import org.sauliketola.helsinkicitybikes.reader.CityBikeStationsReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class BikeListActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private List<BikeStation> stations = new ArrayList<BikeStation>();
+    private Map<String, BikeStation> idToStationsMap = new HashMap<String, BikeStation>();
+
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
+
+    private Runnable listRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +61,15 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
             }
         });
 
-        new ReadStations().execute();
+        Timer stationDataTimer = new Timer();
+        stationDataTimer.scheduleAtFixedRate( new TimerTask() {
+            public void run() {
+                try{
+                    new ReadStations().execute();
+                }
+                catch (Exception e) {}
+            }
+        }, 0, 15000);
 
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
@@ -69,6 +81,13 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
         }
 
         new GetLocation().execute();
+
+        listRefresh = new Runnable() {
+            public void run() {
+                ((ListView) findViewById(R.id.listView)).invalidateViews();
+                ((ListView) findViewById(R.id.listView)).refreshDrawableState();
+            }
+        };
     }
 
     @Override
@@ -85,6 +104,10 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        readLastLocation();
+    }
+
+    private void readLastLocation() {
         if ( Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -113,8 +136,23 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
             CityBikeStationsReader cityBikeStationsReader = new CityBikeStationsReader();
 
             try {
-                BikeListActivity.this.stations.clear();
-                BikeListActivity.this.stations.addAll(cityBikeStationsReader.readBikeStations());
+                List<BikeStation> bikeStations = cityBikeStationsReader.readBikeStations();
+                if(BikeListActivity.this.stations.isEmpty()){
+                    BikeListActivity.this.stations.addAll(bikeStations);
+                    for(BikeStation bikeStation : bikeStations){
+                        idToStationsMap.put(bikeStation.getId(), bikeStation);
+                    }
+                } else {
+                    for(BikeStation bikeStation : bikeStations){
+                        BikeStation stationToUpdate = idToStationsMap.get(bikeStation.getId());
+                        if(stationToUpdate != null){
+                            stationToUpdate.setBikesAvailable(bikeStation.getBikesAvailable());
+                            stationToUpdate.setSpacesAvailable(bikeStation.getSpacesAvailable());
+                        }
+                    }
+                }
+                runOnUiThread(listRefresh);
+                Log.i("Stations", "Station data updated");
             } catch (IOException e){
                 Log.e("BikeListActivity", "Couldn't read bike stations " + e.getMessage());
             }
@@ -134,6 +172,7 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
         protected Void doInBackground(Void... params) {
             Log.i("Location", "Wait for location..");
 
+
             while (mLastLocation == null){
                 Log.i("Location", "Waiting..");
                 try {
@@ -143,6 +182,7 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
                 }
             }
 
+            //runOnUiThread(listRefresh);
             Log.i("Location", "Location found " + mLastLocation.getAltitude() + " " + mLastLocation.getLongitude());
             return null;
         }
@@ -150,7 +190,7 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            ((BikeStationsListViewAdapter)((ListView) findViewById(R.id.listView)).getAdapter()).setLocation(mLastLocation);
+            ((BikeStationsListViewAdapter)((ListView) findViewById(R.id.listView)).getAdapter()).updateDistances(mLastLocation);
         }
     }
 }
