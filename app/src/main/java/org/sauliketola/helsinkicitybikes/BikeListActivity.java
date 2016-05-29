@@ -1,8 +1,10 @@
 package org.sauliketola.helsinkicitybikes;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -13,6 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -30,11 +33,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BikeListActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
     private List<BikeStation> stations = new ArrayList<BikeStation>();
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,16 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
         ListAdapter adapter = new BikeStationsListViewAdapter(
                 this, stations);
         ((ListView) findViewById(R.id.listView)).setAdapter(adapter);
+        ((ListView) findViewById(R.id.listView)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent mapIntent = new Intent(BikeListActivity.this, MapActivity.class);
+                mapIntent.putExtra("latitude", stations.get(position).getLatitude());
+                mapIntent.putExtra("longitude", stations.get(position).getLongitude());
+                mapIntent.putExtra("name", stations.get(position).getName());
+                BikeListActivity.this.startActivity(mapIntent);
+            }
+        });
 
         new ReadStations().execute();
 
@@ -117,7 +129,7 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
         }
     }
 
-    private class GetLocation  extends AsyncTask<Void, Void, Void>{
+    private class GetLocation extends AsyncTask<Void, Void, Void>{
         @Override
         protected Void doInBackground(Void... params) {
             Log.i("Location", "Wait for location..");

@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">HelsinkiCityBikes</string>
+    <string name="app_name">Helsinki City Bikes</string>
+    <string name="title_activity_map">Map</string>
 </resources>

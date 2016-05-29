@@ -44,8 +44,8 @@ public class CityBikeStationsReader {
                 bikeStation.setName(jo.getString("name"));
                 bikeStation.setBikesAvailable(Integer.parseInt(jo.getString("bikesAvailable")));
                 bikeStation.setSpacesAvailable(Integer.parseInt(jo.getString("spacesAvailable")));
-                bikeStation.setX(Double.parseDouble(jo.getString("x")));
-                bikeStation.setY(Double.parseDouble(jo.getString("y")));
+                bikeStation.setLongitude(Double.parseDouble(jo.getString("x")));
+                bikeStation.setLatitude(Double.parseDouble(jo.getString("y")));
 
                 stations.add(bikeStation);
             }

@@ -14,9 +14,6 @@ import org.sauliketola.helsinkicitybikes.domain.BikeStation;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Created by sauli on 29.5.2016.
- */
 public class BikeStationsListViewAdapter extends ArrayAdapter<BikeStation> {
     private final Context context;
     private final List<BikeStation> values;
@@ -55,7 +52,7 @@ public class BikeStationsListViewAdapter extends ArrayAdapter<BikeStation> {
         for(BikeStation bikeStation : values){
 
             float[] distanceResult = new float[3];
-            Location.distanceBetween(mLocation.getLatitude(), mLocation.getLongitude(), bikeStation.getY(), bikeStation.getX(), distanceResult);
+            Location.distanceBetween(mLocation.getLatitude(), mLocation.getLongitude(), bikeStation.getLatitude(), bikeStation.getLongitude(), distanceResult);
 
             bikeStation.setDistance(distanceResult[0]);
         }
