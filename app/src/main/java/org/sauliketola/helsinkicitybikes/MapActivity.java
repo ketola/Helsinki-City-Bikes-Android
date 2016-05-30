@@ -13,7 +13,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.sauliketola.helsinkicitybikes.domain.BikeStation;
+
+import java.util.ArrayList;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -21,6 +26,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private Double latitude;
     private Double longitude;
     private String name;
+
+    private ArrayList<BikeStation> stations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +43,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         latitude = intent.getDoubleExtra("latitude", 0);
         longitude = intent.getDoubleExtra("longitude", 0);
         name = intent.getStringExtra("name");
+        stations = (ArrayList<BikeStation>) intent.getSerializableExtra("stations");
 
         Log.i("Location", "Start map intent with lat " + latitude + " and long " + longitude);
     }
@@ -54,10 +62,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        LatLng bikestation = new LatLng(latitude, longitude);
-        mMap.addMarker(new MarkerOptions().position(bikestation).title(name));
+        for(BikeStation station : stations){
+            LatLng point = new LatLng(station.getLatitude(), station.getLongitude());
+            Marker m = mMap.addMarker(new MarkerOptions().position(point).title(station.getName()).snippet(station.getBikesAvailable() + "/" + (station.getBikesAvailable() + station.getSpacesAvailable())));
+        }
+
+        LatLng selectedStation = new LatLng(latitude, longitude);
+        
         mMap.moveCamera(CameraUpdateFactory.zoomTo(17));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(bikestation));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(selectedStation));
 
 
         if ( Build.VERSION.SDK_INT >= 23 &&

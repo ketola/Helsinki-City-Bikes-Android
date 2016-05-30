@@ -1,6 +1,8 @@
 package org.sauliketola.helsinkicitybikes.domain;
 
-public class BikeStation {
+import java.io.Serializable;
+
+public class BikeStation implements Serializable {
 
     private String id;
     private String name;
