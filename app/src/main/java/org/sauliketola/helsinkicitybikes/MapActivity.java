@@ -6,19 +6,27 @@ import android.os.Build;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableStringBuilder;
+import android.text.style.StyleSpan;
 import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.ui.IconGenerator;
 
 import org.sauliketola.helsinkicitybikes.domain.BikeStation;
 
 import java.util.ArrayList;
+
+import static android.graphics.Typeface.BOLD;
+import static android.graphics.Typeface.ITALIC;
+import static android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -29,10 +37,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     private ArrayList<BikeStation> stations;
 
+    private IconGenerator iconFactory;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        iconFactory = new IconGenerator(this);
+        iconFactory.setContentPadding(4, 2, 4, 2);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -62,9 +75,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+
         for(BikeStation station : stations){
             LatLng point = new LatLng(station.getLatitude(), station.getLongitude());
-            Marker m = mMap.addMarker(new MarkerOptions().position(point).title(station.getName()).snippet(station.getBikesAvailable() + "/" + (station.getBikesAvailable() + station.getSpacesAvailable())));
+            addIcon(iconFactory, station.getBikesAvailable() + "/" + (station.getBikesAvailable() + station.getSpacesAvailable()), station.getName(), point);
         }
 
         LatLng selectedStation = new LatLng(latitude, longitude);
@@ -80,5 +94,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             return;
         }
         mMap.setMyLocationEnabled(true);
+    }
+
+    private void addIcon(IconGenerator iconFactory, CharSequence text, String title, LatLng position) {
+        MarkerOptions markerOptions = new MarkerOptions().
+                icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(text))).title(title).
+                position(position).
+                anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
+        mMap.addMarker(markerOptions);
     }
 }

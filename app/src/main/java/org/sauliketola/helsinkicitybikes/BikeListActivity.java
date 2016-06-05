@@ -136,7 +136,8 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
 
     @Override
     protected void onPause() {
-        stopLocationUpdates();
+        if(mGoogleApiClient.isConnected())
+            stopLocationUpdates();
         super.onPause();
     }
 
