@@ -178,6 +178,7 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     public void onLocationChanged(Location location) {
         ((BikeStationsListViewAdapter)((ListView) findViewById(R.id.listView)).getAdapter()).updateDistances(mLastLocation);
+        runOnUiThread(listRefresh);
     }
 
     private class ReadStations extends AsyncTask<Void, Void, Void>{
@@ -214,7 +215,6 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            //((ListView) findViewById(R.id.listView)).getAdapter().;
         }
     }
 

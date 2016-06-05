@@ -50,20 +50,19 @@ public class BikeStationsListViewAdapter extends ArrayAdapter<BikeStation> {
 
         // update distances
         for(BikeStation bikeStation : values){
-
             float[] distanceResult = new float[3];
             Location.distanceBetween(mLocation.getLatitude(), mLocation.getLongitude(), bikeStation.getLatitude(), bikeStation.getLongitude(), distanceResult);
-
             bikeStation.setDistance(distanceResult[0]);
         }
 
-        this.notifyDataSetChanged();
         this.sort(new Comparator<BikeStation>() {
             @Override
             public int compare(BikeStation lhs, BikeStation rhs) {
                 return lhs.getDistance().compareTo(rhs.getDistance());
             }
         });
+
+        this.notifyDataSetChanged();
     }
 
 
