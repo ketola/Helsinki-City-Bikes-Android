@@ -100,7 +100,7 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(30000);
+        mLocationRequest.setInterval(15000);
         mLocationRequest.setFastestInterval(5000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
@@ -178,8 +178,10 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
 
     @Override
     public void onLocationChanged(Location location) {
-        ((BikeStationsListViewAdapter)((ListView) findViewById(R.id.listView)).getAdapter()).updateDistances(mLastLocation);
-        runOnUiThread(listRefresh);
+        Log.d("Location", "Location changed " + location);
+        mLastLocation = location;
+        ((BikeStationsListViewAdapter)((ListView) findViewById(R.id.listView)).getAdapter()).updateDistances(location);
+        listRefresh.run();
     }
 
     private class ReadStations extends AsyncTask<Void, Void, Void>{
@@ -234,7 +236,6 @@ public class BikeListActivity extends AppCompatActivity implements GoogleApiClie
                 }
             }
 
-            //runOnUiThread(listRefresh);
             Log.i("Location", "Location found " + mLastLocation.getAltitude() + " " + mLastLocation.getLongitude());
             return null;
         }
